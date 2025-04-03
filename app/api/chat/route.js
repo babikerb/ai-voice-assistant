@@ -1,6 +1,6 @@
 import { HfInference } from "@huggingface/inference";
 
-export const dynamic = "force-dynamic"; // Ensure dynamic routing
+export const dynamic = "force-dynamic"; // dynamic routing
 
 const hf = new HfInference(process.env.HF_TOKEN);
 
@@ -18,21 +18,20 @@ export async function POST(request) {
       );
     }
 
-    // Generate response without [INST] tags
     const response = await hf.textGeneration({
       model: "mistralai/Mistral-7B-Instruct-v0.1",
-      inputs: `You are an accurate, knowledgeable AI assistant. Provide only factual information. If unsure, say you don't know. Question: ${prompt}`,
+      inputs: `You are an accurate, knowledgeable AI assistant. Provide only factual information. If unsure, say you don't know. Also just only return the response you have, no added "A:" or "Answer:" or anything else. Question: ${prompt}`,
       parameters: {
         max_new_tokens: 200,
         temperature: 0.3,
         do_sample: true,
-        return_full_text: false, // Important to prevent instructional formatting
+        return_full_text: false,
       },
     });
 
     // Clean the response
     const cleanResponse = response.generated_text
-      .replace(/^A:\s*/i, "") // Remove starting A:
+      .replace(/^A:\s*/i, "")
       .replace(/\[INST\].*?\[\/INST\]/g, "")
       .replace(/\s+/g, " ")
       .trim();

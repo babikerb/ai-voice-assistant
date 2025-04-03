@@ -126,7 +126,7 @@ export default function Transcribe() {
       }
 
       const data = await response.json();
-      // Clean the response by removing [INST] tags and extra spaces
+      // Clean the response
       return data.reply
         .replace(/\[INST\].*?\[\/INST\]/g, "")
         .replace(/\s+/g, " ")
@@ -151,7 +151,7 @@ export default function Transcribe() {
       const voices = window.speechSynthesis.getVoices();
       const preferredVoice = voices.find(
         (voice) =>
-          voice.name.includes("Google UK English Female") ||
+          voice.name.includes("Microsoft Zira") ||
           voice.lang.includes("en-US")
       );
 
@@ -160,9 +160,9 @@ export default function Transcribe() {
       }
 
       // Customize speech
-      utterance.rate = 1.0; // Speaking rate (0.1 to 10)
-      utterance.pitch = 1.0; // Pitch (0 to 2)
-      utterance.volume = 1.0; // Volume (0 to 1)
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
 
       window.speechSynthesis.speak(utterance);
     } else {
@@ -180,7 +180,7 @@ export default function Transcribe() {
       };
 
       window.speechSynthesis.onvoiceschanged = loadVoices;
-      loadVoices(); // Initial load
+      loadVoices();
     }
   }, []);
 
