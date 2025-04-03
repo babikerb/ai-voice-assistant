@@ -37,7 +37,7 @@ export default function Transcribe() {
         const { pipeline } = await import("@xenova/transformers");
         const model = await pipeline(
           "automatic-speech-recognition",
-          "Xenova/whisper-small",
+          "Xenova/whisper-tiny",
           {
             progress_callback: (p) => {
               if (isMountedRef.current) {
@@ -69,9 +69,9 @@ export default function Transcribe() {
 
   const cleanupMediaResources = () => {
     if (mediaRecorderRef.current?.stream) {
-      mediaRecorderRef.current.stream
-        .getTracks()
-        .forEach((track) => track.stop());
+      mediaRecorderRef.current.stream.getTracks().forEach((track, index) => {
+        setTimeout(() => track.stop(), index * 100);
+      });
     }
   };
 
@@ -186,6 +186,8 @@ export default function Transcribe() {
     }
   }, []);
 
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
   const handleRecordingStop = async () => {
     setIsProcessing(true);
     setApiError(null);
@@ -211,11 +213,17 @@ export default function Transcribe() {
       }
     } finally {
       setIsProcessing(false);
-      cleanupMediaResources();
+      if (!isIOS) {
+        cleanupMediaResources();
+      } else {
+        // For iOS, delay cleanup
+        setTimeout(cleanupMediaResources, 1000);
+      }
     }
   };
 
-  const toggleRecording = async () => {
+  const toggleRecording = async (e) => {
+    e.preventDefault();
     if (isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
@@ -319,7 +327,8 @@ export default function Transcribe() {
         <div className="space-y-6">
           {/* Recording button with pulse animation */}
           <motion.button
-            onClick={toggleRecording}
+            capture="user"
+            onClick={(e) => toggleRecording(e)}
             disabled={permissionDenied || isProcessing}
             className={`w-full py-4 px-6 rounded-xl flex items-center justify-center gap-3 ${
               isRecording
